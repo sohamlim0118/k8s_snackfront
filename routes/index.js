@@ -1,46 +1,93 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const Message = require('./messages')
+const express = require("express");
+const { snackModel, createSnack, userModel } = require("./snacks");
 
 const router = express.Router();
-router.use(bodyParser.json());
 
-// Handles GET requests to /messages
-router.get('/messages', (req, res) => {
-    console.log(`received request: ${req.method} ${req.url}`)
-
-    // Query for messages in descending order
-    try {
-        Message.messageModel.find({}, null, { sort: { '_id': -1 } }, (err, messages) => {
-            let list = []
-            if (messages.length > 0) {
-                messages.forEach((message) => {
-                    if (message.name && message.body && message.date) {
-                        list.push({ 'name': message.name, 'body': message.body, 'date': message.date, 'timestamp': message._id.getTimestamp() })
-                    }
-                });
-            }
-            res.status(200).json(list)
-        });
-    } catch (error) {
-        res.status(500).json(error)
-    }
+router.get("/snacks", async (req, res) => {
+  try {
+    const snacks = await snackModel.find(); // 모든 과자 정보 조회
+    res.status(200).json(snacks); // JSON 형식으로 응답
+  } catch (error) {
+    console.error("Error retrieving snacks:", error);
+    res
+      .status(500)
+      .json({ message: "Error retrieving snacks", error: error.message });
+  }
 });
 
-// Handles POST requests to /messages
-router.post('/messages', (req, res) => {
-    try {
-        Message.create(({name: req.body.name, body: req.body.body, date: req.body.date}))
-        res.status(200).send()
-    } catch (err) {
-        if (err.name == "ValidationError") {
-            console.error('validation error: ' + err)
-            res.status(400).json(err)
-        } else {
-            console.error('could not save: ' + err)
-            res.status(500).json(err)
-        }
+router.post("/snacks", async (req, res) => {
+  const { name, image, nutritionalIngredients } = req.body;
+
+  try {
+    const newSnack = new snackModel({
+      name,
+      image,
+      nutritionalIngredients, // { calories, carbohydrates, protein, fat } 형태의 객체
+    });
+
+    await newSnack.save(); // 새로운 문서를 MongoDB에 저장
+    res
+      .status(201)
+      .json({ message: "Snack added successfully", snack: newSnack });
+  } catch (error) {
+    console.error("Error adding snack:", error);
+    res
+      .status(500)
+      .json({ message: "Error adding snack", error: error.message });
+  }
+});
+
+// /snacks/required 요청 핸들러 예시
+router.post("/snacks/required", async (req, res) => {
+  const snackName = req.query.name;
+
+  if (!snackName) {
+    return res
+      .status(400)
+      .json({ message: "Snack name is required in query params" });
+  }
+
+  try {
+    const snack = await snackModel.findOneAndUpdate(
+      { name: snackName },
+      { $inc: { required: 1 } },
+      { new: true }
+    );
+
+    if (!snack) {
+      return res.status(404).json({ message: "Snack not found" });
     }
+
+    res.status(200).json({
+      message: `'${snackName}' required count increased.`,
+      snack: snack,
+    });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Error updating snack", error: error.message || error });
+  }
+});
+
+// /users/login 요청 핸들러 예시
+router.get("/users/login", async (req, res) => {
+  const { userName, userPass } = req.query;
+
+  try {
+    const user = await userModel.findOne({
+      name: userName,
+      password: userPass,
+    });
+
+    if (user) {
+      res.status(200).json({ num: user.num });
+    } else {
+      res.status(401).json({ message: "Invalid username or password" });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 module.exports = router;

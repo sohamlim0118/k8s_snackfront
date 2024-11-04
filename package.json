@@ -4,7 +4,7 @@
   "description": "backend",
   "main": "app.js",
   "scripts": {
-    "start": "node --inspect=9229 app.js"
+    "start": "PORT=3000 node --inspect=9229 app.js"
   },
   "author": "Google Inc.",
   "license": "0BSD",
@@ -13,5 +13,8 @@
     "express": "^4.16.4",
     "mongodb": "^3.2.2",
     "mongoose": "^5.4.20"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5"
   }
 }
