@@ -1,7 +1,27 @@
 const express = require("express");
 const { snackModel, createSnack, userModel } = require("./snacks");
-
+const axios = require("axios");
 const router = express.Router();
+const cookieParser = require("cookie-parser");
+const app = express();
+app.use(cookieParser());
+
+router.get("/", async (req, res) => {
+  try {
+    const response = await axios.get(process.env.BACKEND_URI); // BACKEND_URI로부터 snacks 데이터를 가져옴
+    const snacks = response.data; // snacks 데이터를 가져옴
+    const isUserLoggedIn = req.cookies.user === "true"; // 쿠키에서 로그인 상태 확인
+
+    // 로그 출력
+    console.log("User Logged In:", isUserLoggedIn);
+    console.log("Snacks Data:", snacks);
+
+    res.render("home", { snacks, user: isUserLoggedIn }); // snacks와 로그인 상태를 함께 전달
+  } catch (error) {
+    console.error("Error fetching snacks:", error);
+    res.render("home", { snacks: [], user: false }); // 에러 발생 시 빈 배열과 로그인 상태 false로 렌더링
+  }
+});
 
 router.get("/snacks", async (req, res) => {
   try {
@@ -81,6 +101,12 @@ router.get("/users/login", async (req, res) => {
     });
 
     if (user) {
+      // 로그인 성공 시 쿠키에 `user=true` 설정
+      res.cookie("user", "true", {
+        httpOnly: false,
+        maxAge: 24 * 60 * 60 * 1000,
+        sameSite: "Lax",
+      }); // 1일 동안 유지
       res.status(200).json({ num: user.num });
     } else {
       res.status(401).json({ message: "Invalid username or password" });
