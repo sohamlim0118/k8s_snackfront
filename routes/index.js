@@ -6,23 +6,6 @@ const cookieParser = require("cookie-parser");
 const app = express();
 app.use(cookieParser());
 
-router.get("/", async (req, res) => {
-  try {
-    const response = await axios.get(process.env.BACKEND_URI); // BACKEND_URI로부터 snacks 데이터를 가져옴
-    const snacks = response.data; // snacks 데이터를 가져옴
-    const isUserLoggedIn = req.cookies.user === "true"; // 쿠키에서 로그인 상태 확인
-
-    // 로그 출력
-    console.log("User Logged In:", isUserLoggedIn);
-    console.log("Snacks Data:", snacks);
-
-    res.render("home", { snacks, user: isUserLoggedIn }); // snacks와 로그인 상태를 함께 전달
-  } catch (error) {
-    console.error("Error fetching snacks:", error);
-    res.render("home", { snacks: [], user: false }); // 에러 발생 시 빈 배열과 로그인 상태 false로 렌더링
-  }
-});
-
 router.get("/snacks", async (req, res) => {
   try {
     const snacks = await snackModel.find(); // 모든 과자 정보 조회
