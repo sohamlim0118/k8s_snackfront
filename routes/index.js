@@ -74,6 +74,25 @@ router.post("/snacks/required", async (req, res) => {
 });
 
 // /users/login 요청 핸들러 예시
+// /users/login 요청 핸들러 예시
+router.get("/users/login", async (req, res) => {
+  const { userName, userPass } = req.query;
+  console.log("Received:", userName, userPass);
+
+  try {
+    // 로그인 성공 시 쿠키에 `user=true` 설정
+    res.cookie("user", "true", {
+      httpOnly: false,
+      maxAge: 24 * 60 * 60 * 1000,
+      sameSite: "Lax",
+    }); // 1일 동안 유지
+    res.status(200).json({ message: "Login successful", userName: userName });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/*
 router.get("/users/login", async (req, res) => {
   const { userName, userPass } = req.query;
   console.log("Received:", userName, userPass);
@@ -99,6 +118,7 @@ router.get("/users/login", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+*/
 
 // test
 router.get("/users", async (req, res) => {
