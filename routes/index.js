@@ -99,4 +99,17 @@ router.get("/users/login", async (req, res) => {
   }
 });
 
+// test
+router.get("/users", async (req, res) => {
+  try {
+    const users = await userModel.find(); // 모든 사용자 정보 조회
+    res.status(200).json(users); // JSON 형식으로 응답
+  } catch (error) {
+    console.error("Error retrieving users:", error);
+    res
+      .status(500)
+      .json({ message: "Error retrieving users", error: error.message });
+  }
+});
+
 module.exports = router;
