@@ -76,6 +76,7 @@ router.post("/snacks/required", async (req, res) => {
 // /users/login 요청 핸들러 예시
 router.get("/users/login", async (req, res) => {
   const { userName, userPass } = req.query;
+  console.log("Received:", userName, userPass);
 
   try {
     const user = await userModel.findOne({
