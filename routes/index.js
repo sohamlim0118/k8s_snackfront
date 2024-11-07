@@ -20,7 +20,7 @@ router.get("/snacks", async (req, res) => {
 
 router.post("/snacks", async (req, res) => {
   const { name, image, nutritionalIngredients } = req.body;
-
+  console.log(req.body);
   try {
     const newSnack = new snackModel({
       name,
