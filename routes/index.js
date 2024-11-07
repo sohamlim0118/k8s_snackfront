@@ -1,7 +1,10 @@
 const express = require("express");
 const { snackModel, createSnack, userModel } = require("./snacks");
-
+const axios = require("axios");
 const router = express.Router();
+const cookieParser = require("cookie-parser");
+const app = express();
+app.use(cookieParser());
 
 router.get("/snacks", async (req, res) => {
   try {
@@ -81,6 +84,12 @@ router.get("/users/login", async (req, res) => {
     });
 
     if (user) {
+      // 로그인 성공 시 쿠키에 `user=true` 설정
+      res.cookie("user", "true", {
+        httpOnly: false,
+        maxAge: 24 * 60 * 60 * 1000,
+        sameSite: "Lax",
+      }); // 1일 동안 유지
       res.status(200).json({ num: user.num });
     } else {
       res.status(401).json({ message: "Invalid username or password" });

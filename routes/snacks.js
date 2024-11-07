@@ -31,10 +31,9 @@ const snackSchema = mongoose.Schema({
   name: { type: String, required: [true, "Name is required"] },
   image: { type: String, required: [true, "Image URL is required"] },
   nutritionalIngredients: {
-    calories: { type: String },
-    carbohydrates: { type: String },
-    protein: { type: String },
-    fat: { type: String },
+    type: Map,
+    of: String,
+    require: true,
   },
   required: { type: Number, default: 0 },
 });

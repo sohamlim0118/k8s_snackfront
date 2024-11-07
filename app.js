@@ -1,15 +1,27 @@
 require("dotenv").config();
 
 const express = require("express");
-const app = express();
+const cookieParser = require("cookie-parser"); // 쿠키 파서 추가
+const cors = require("cors"); // CORS 모듈 추가
 const routes = require("./routes");
-const PORT = process.env.PORT;
 const snacks = require("./routes/snacks");
+const bodyParser = require("body-parser");
+const app = express();
+const PORT = process.env.PORT;
 
+app.use(bodyParser.json({ limit: "10mb" }));
+app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
+app.use(
+  cors({
+    origin: "front_snack:3001", // 프론트엔드 도메인 주소로 수정
+    credentials: true, // 쿠키를 포함한 요청 허용
+  })
+);
 app.use(express.json());
+app.use(cookieParser()); // 쿠키 파서 미들웨어 추가
 app.use("/", routes);
 
-// Application will fail if environment variables are not set
+// 환경 변수 체크
 if (!process.env.PORT) {
   const errMsg = "PORT environment variable is not defined";
   console.error(errMsg);
@@ -22,10 +34,10 @@ if (!process.env.GUESTBOOK_DB_ADDR) {
   throw new Error(errMsg);
 }
 
-// Connect to MongoDB, will retry only once
-snacks.connectToMongoDB(); // MongoDB 연결을 위해 messages.connectToMongoDB() 호출
+// MongoDB 연결
+snacks.connectToMongoDB();
 
-// Starts an http server on the $PORT environment variable
+// 서버 시작
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
   console.log("Press Ctrl+C to quit.");
