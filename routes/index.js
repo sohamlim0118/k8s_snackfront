@@ -74,23 +74,31 @@ router.post("/snacks/required", async (req, res) => {
 });
 
 // /users/login 요청 핸들러 예시
-// /users/login 요청 핸들러 예시
 router.get("/users/login", async (req, res) => {
   const { userName, userPass } = req.query;
   console.log("Received:", userName, userPass);
 
   try {
-    // 로그인 성공 시 쿠키에 `user=true` 설정
-    res.cookie("user", "true", {
-      httpOnly: false,
-      maxAge: 24 * 60 * 60 * 1000,
-      sameSite: "Lax",
-    }); // 1일 동안 유지
-    res.status(200).json({ message: "Login successful", userName: userName });
+    // DB에서 사용자를 조회하여 확인
+    const user = await userModel.findOne({ name: userName, password: userPass });
+
+    if (user) {
+      // 로그인 성공 시 쿠키에 `user=true` 설정
+      res.cookie("user", "true", {
+        httpOnly: false,
+        maxAge: 24 * 60 * 60 * 1000,
+        sameSite: "Lax",
+      });
+      res.status(200).json({ message: "Login successful", num: user.num });
+    } else {
+      res.status(401).json({ message: "Invalid username or password" });
+    }
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Error during login:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
+
 
 /*
 router.get("/users/login", async (req, res) => {
