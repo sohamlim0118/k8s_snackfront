@@ -23,6 +23,7 @@ const connectToMongoDB = async () => {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     connectTimeoutMS: 2000,
+    reconnectTries: 30,
   });
 };
 
