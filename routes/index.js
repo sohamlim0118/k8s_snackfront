@@ -2,9 +2,9 @@ const express = require("express");
 const { snackModel, createSnack, userModel } = require("./snacks");
 const axios = require("axios");
 const router = express.Router();
-const cookieParser = require("cookie-parser");
+//const cookieParser = require("cookie-parser");
 const app = express();
-app.use(cookieParser());
+//app.use(cookieParser());
 
 router.get("/snacks", async (req, res) => {
   try {
@@ -73,7 +73,22 @@ router.post("/snacks/required", async (req, res) => {
   }
 });
 
+router.get("/snacks/ranking", async (req, res) => {
+  try {
+    // 좋아요 순으로 정렬하여 데이터 반환
+    const snacks = await snackModel.find().sort({ required: -1 }).limit(5); // 좋아요 순으로 내림차순 정렬
+    res.status(200).json(snacks); // JSON 형식으로 응답
+  } catch (error) {
+    console.error("Error retrieving snack rankings:", error);
+    res.status(500).json({
+      message: "Error retrieving snack rankings",
+      error: error.message,
+    });
+  }
+});
+
 // /users/login 요청 핸들러 예시
+/*
 router.get("/users/login", async (req, res) => {
   const { userName, userPass } = req.query;
   console.log("Received:", userName, userPass);
@@ -98,7 +113,7 @@ router.get("/users/login", async (req, res) => {
     res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
-
+*/
 
 /*
 router.get("/users/login", async (req, res) => {
