@@ -1,30 +1,59 @@
-// snacks.js 파일의 수정
+// snacks.js 파일 수정
 const mongoose = require("mongoose");
 
+// 환경 변수에서 MongoDB 접속 정보 가져오기
 const GUESTBOOK_DB_ADDR = process.env.GUESTBOOK_DB_ADDR;
-const mongoURI = "mongodb://" + GUESTBOOK_DB_ADDR + "/snacks";
+const USERNAME = process.env.MONGO_INITDB_ROOT_USERNAME;
+const PASSWORD = process.env.MONGO_INITDB_ROOT_PASSWORD;
 
+// MongoDB 고정된 접속 정보
+const REQUIRED_USERNAME = "admin";
+const REQUIRED_PASSWORD = "k8spass#";
+
+// 검증 로직 추가
+if (!GUESTBOOK_DB_ADDR) {
+  console.error("환경 변수 GUESTBOOK_DB_ADDR가 설정되지 않았습니다.");
+  process.exit(1);
+}
+
+if (USERNAME !== REQUIRED_USERNAME || PASSWORD !== REQUIRED_PASSWORD) {
+  console.error("MongoDB 접속 정보가 올바르지 않습니다.");
+  console.error(`받은 아이디: ${USERNAME || "없음"}`);
+  console.error(`받은 비밀번호: ${PASSWORD || "없음"}`);
+  process.exit(1); // 아이디/비밀번호가 틀리면 종료
+}
+
+// MongoDB URI 구성
+const mongoURI = `mongodb://${USERNAME}:${PASSWORD}@${GUESTBOOK_DB_ADDR}/snacks?authSource=admin`;
+
+// MongoDB 연결 이벤트 핸들러
 const db = mongoose.connection;
 
 db.on("disconnected", () => {
   console.error(`Disconnected: unable to reconnect to ${mongoURI}`);
   throw new Error(`Disconnected: unable to reconnect to ${mongoURI}`);
 });
+
 db.on("error", (err) => {
   console.error(`Unable to connect to ${mongoURI}: ${err}`);
 });
 
 db.once("open", () => {
-  console.log(`connected to ${mongoURI}`);
+  console.log(`Connected to MongoDB at ${mongoURI}`);
 });
 
+// MongoDB 연결 함수
 const connectToMongoDB = async () => {
-  await mongoose.connect(mongoURI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    connectTimeoutMS: 2000,
-    reconnectTries: 30,
-  });
+  try {
+    await mongoose.connect(mongoURI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log("MongoDB 연결 성공");
+  } catch (err) {
+    console.error("MongoDB 연결 실패:", err);
+    process.exit(1);
+  }
 };
 
 // snacks 컬렉션용 스키마 정의
