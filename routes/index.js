@@ -2,9 +2,9 @@ const express = require("express");
 const { snackModel, createSnack, userModel } = require("./snacks");
 const axios = require("axios");
 const router = express.Router();
-//const cookieParser = require("cookie-parser");
+const cookieParser = require("cookie-parser");
 const app = express();
-//app.use(cookieParser());
+app.use(cookieParser());
 
 router.get("/snacks", async (req, res) => {
   try {
@@ -88,14 +88,16 @@ router.get("/snacks/ranking", async (req, res) => {
 });
 
 // /users/login 요청 핸들러 예시
-/*
 router.get("/users/login", async (req, res) => {
   const { userName, userPass } = req.query;
   console.log("Received:", userName, userPass);
 
   try {
     // DB에서 사용자를 조회하여 확인
-    const user = await userModel.findOne({ name: userName, password: userPass });
+    const user = await userModel.findOne({
+      name: userName,
+      password: userPass,
+    });
 
     if (user) {
       // 로그인 성공 시 쿠키에 `user=true` 설정
@@ -113,7 +115,6 @@ router.get("/users/login", async (req, res) => {
     res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
-*/
 
 /*
 router.get("/users/login", async (req, res) => {
