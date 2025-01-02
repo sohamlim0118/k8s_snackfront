@@ -19,7 +19,7 @@ app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
 
 app.use(
   cors({
-    origin: "snack-frontend.front.svc.cluster.local:3001", // 프론트엔드 도메인 주소로 수정
+    origin: "snack-frontend2.front.svc.cluster.local:3001", // 프론트엔드 도메인 주소로 수정
     credentials: true, // 쿠키를 포함한 요청 허용
   })
 );
