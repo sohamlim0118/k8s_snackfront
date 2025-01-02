@@ -6,6 +6,7 @@ const cors = require("cors"); // CORS 모듈 추가
 const routes = require("./routes");
 const snacks = require("./routes/snacks");
 const bodyParser = require("body-parser");
+const client = require("prom-client"); // Prometheus 클라이언트 추가
 const app = express();
 const PORT = process.env.PORT;
 const path = require("path");
@@ -44,9 +45,39 @@ if (!process.env.GUESTBOOK_DB_ADDR) {
 // MongoDB 연결
 snacks.connectToMongoDB();
 
+// Prometheus 기본 메트릭 등록
+const collectDefaultMetrics = client.collectDefaultMetrics;
+collectDefaultMetrics({ timeout: 5000 }); // 기본 메트릭을 5초마다 수집
+
+// 사용자 정의 메트릭 생성
+const requestCount = new client.Counter({
+  name: "http_requests_total", // 메트릭 이름
+  help: "Total number of HTTP requests", // 메트릭 설명
+  labelNames: ["method", "route"], // 레이블 이름
+});
+
+// 요청 전후로 사용자 정의 메트릭 업데이트
+app.use((req, res, next) => {
+  requestCount.inc({ method: req.method, route: req.path }); // 요청 수 증가
+  next();
+});
+
+// Prometheus 메트릭 엔드포인트 추가
+app.get("/metrics", async (req, res) => {
+  try {
+    res.set("Content-Type", client.register.contentType);
+    res.end(await client.register.metrics());
+  } catch (err) {
+    res.status(500).end(err.message);
+  }
+});
+
 // 서버 시작
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
+  console.log(
+    `Prometheus metrics available at http://localhost:${PORT}/metrics`
+  );
   console.log("Press Ctrl+C to quit.");
 });
 

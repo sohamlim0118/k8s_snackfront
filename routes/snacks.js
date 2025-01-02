@@ -8,7 +8,7 @@ const PASSWORD = process.env.MONGO_INITDB_ROOT_PASSWORD;
 
 // MongoDB 고정된 접속 정보
 const REQUIRED_USERNAME = "admin";
-const REQUIRED_PASSWORD = "k8spass#";
+const REQUIRED_PASSWORD = "k8spass";
 
 // 검증 로직 추가
 if (!GUESTBOOK_DB_ADDR) {
